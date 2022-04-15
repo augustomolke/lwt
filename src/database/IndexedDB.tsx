@@ -1,5 +1,9 @@
 import React from "react";
 
+interface DBContextInterface {
+  db: IDBDatabase | null;
+}
+
 interface Collection {
   key?: string;
   collectionName: string;
@@ -15,13 +19,19 @@ type DB = <T extends Record<keyof T, Collection>>(
   name: string,
   version?: number,
   colletions?: Collections<T>[]
-) => IDBOpenDBRequest;
+) => React.FC;
 
-export const useIndexedDB: DB = (name, version, collections) => {
-  const DBOpenRequest = React.useMemo(
-    () => indexedDB.open(name, version),
-    [name, version]
-  );
+type CreateDB = <T extends Record<keyof T, Collection>>(
+  name: string,
+  version?: number,
+  colletions?: Collections<T>[]
+) => IDBDatabase;
+
+const DBContext = React.createContext<DBContextInterface>({ db: null });
+
+const createDB: CreateDB = async (name, version, collections) => {
+  const DBOpenRequest: IDBOpenDBRequest = indexedDB.open(name, version);
+
   DBOpenRequest.addEventListener("success", (event) => {
     console.log("success", event);
   });
@@ -55,8 +65,38 @@ export const useIndexedDB: DB = (name, version, collections) => {
     console.log("upgradeneeded", event);
   });
 
-  return DBOpenRequest;
+  const db = (await DBOpenRequest).result;
+
+  return db;
 };
 
-const output = { useIndexedDB };
+export const useIndexedDB: DB = (name, version, collections) => {
+  const db = createDB(name, version, collections);
+  const Provider = React.useMemo(() => {
+    const context = { db };
+
+    const DatabaseProvider: React.FC = ({ children }) => {
+      return (
+        <DBContext.Provider value={context}>{children}</DBContext.Provider>
+      );
+    };
+
+    return DatabaseProvider;
+  }, [db]);
+
+  return Provider;
+};
+
+export const useInsert = () => {
+  const { db } = React.useContext(DBContext);
+
+  if (db) {
+    console.log(db);
+    // db.transaction("Words", "readwrite").objectStore("Words").add({
+    //   word: "test",
+    //   status: "status",
+    // });
+  }
+};
+const output = { useIndexedDB, useInsert };
 export default output;

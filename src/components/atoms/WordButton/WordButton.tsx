@@ -1,5 +1,5 @@
 import React from "react";
-import Button from "react-bootstrap/Button";
+import Button from "@mui/material/Button";
 
 interface Props {
   word: string;
@@ -9,7 +9,7 @@ const WordButton: React.FunctionComponent<Props> = ({
   word,
   state = "unknown",
 }) => {
-  const [studyState, setStudyState] = React.useState<string>(state);
+  const [_studyState, setStudyState] = React.useState<string>(state);
   const variant: { [key: string]: any } = {
     unknown: "danger",
     well: "sucess",
@@ -17,7 +17,7 @@ const WordButton: React.FunctionComponent<Props> = ({
     regular: "warning",
     ignore: "outline-secondary",
   };
-  return <Button variant={variant[studyState]}>{word}</Button>;
+  return <Button onClick={() => setStudyState("poor")}>{word}</Button>;
 };
 
 export default WordButton;
