@@ -12,7 +12,7 @@ interface Words {
 }
 
 interface Database {
-  collection1: Words;
+  Words: Words;
 }
 
 function App() {
