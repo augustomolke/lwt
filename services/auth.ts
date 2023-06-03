@@ -20,8 +20,12 @@ export const sendLoginEmail = async (email: string) => {
   window.localStorage.setItem('emailForSignIn', email);
 };
 
+export const loginUrl = (): boolean => {
+  return isSignInWithEmailLink(auth, window.location.href);
+};
+
 export const login = async (email: string): Promise<User | void> => {
-  if (!isSignInWithEmailLink(auth, window.location.href) || !email) return;
+  if (!loginUrl || !email) return;
 
   const { user } = await signInWithEmailLink(auth, email, window.location.href);
 

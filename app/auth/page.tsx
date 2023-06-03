@@ -2,23 +2,34 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useEffect, useState } from 'react';
-import { sendLoginEmail, login, onAuthChanged, logout } from '@/services/auth';
+import {
+  sendLoginEmail,
+  login,
+  onAuthChanged,
+  logout,
+  loginUrl,
+} from '@/services/auth';
 
 const Page = () => {
-  const [email, setEmail] = useState(
-    window.localStorage.getItem('emailForSignIn') || ''
-  );
+  const [email, setEmail] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState(false);
+
   const [user, setUser] = useState(false);
 
   useEffect(() => {
+    if (loginUrl()) {
+      const storedEmail = window.localStorage.getItem('emailForSignIn');
+
+      if (storedEmail) {
+        login(storedEmail);
+      } else {
+        setConfirmEmail(true);
+      }
+    }
     const unsub = onAuthChanged((user) => setUser(!!user));
 
     return unsub;
   }, []);
-
-  useEffect(() => {
-    login(email);
-  }, [email]);
 
   return (
     <section>
@@ -28,6 +39,9 @@ const Page = () => {
         <>
           <Input value={email} onChange={(e) => setEmail(e.target.value)} />
           <Button onClick={() => sendLoginEmail(email)}>Login</Button>
+          {confirmEmail && loginUrl() && (
+            <Button onClick={() => login(email)}>Confirmar email</Button>
+          )}
         </>
       )}
     </section>
