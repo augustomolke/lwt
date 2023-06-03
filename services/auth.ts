@@ -7,6 +7,7 @@ import {
   User,
   onAuthStateChanged,
   signOut,
+  signInWithEmailAndPassword,
 } from 'firebase/auth';
 
 const actionCodeSettings: ActionCodeSettings = {
@@ -24,7 +25,16 @@ export const loginUrl = (): boolean => {
   return isSignInWithEmailLink(auth, window.location.href);
 };
 
-export const login = async (email: string): Promise<User | void> => {
+export const login = async (
+  email: string,
+  password?: string
+): Promise<User | void> => {
+  if (password) {
+    const { user } = await signInWithEmailAndPassword(auth, email, password);
+
+    return user;
+  }
+
   if (!loginUrl || !email) return;
 
   const { user } = await signInWithEmailLink(auth, email, window.location.href);
