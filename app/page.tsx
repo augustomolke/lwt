@@ -4,7 +4,7 @@ import LogoutForm from '@/components/LogoutForm';
 import { useAuth } from '@/contexts/Authcontext';
 import { Button } from '@/components/ui/button';
 import { useCallback, useState } from 'react';
-import { firestore } from '@/lib/firebase';
+import { firestore } from '@/lib/firebase-client';
 import {
   query,
   collection,
