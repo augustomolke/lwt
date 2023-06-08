@@ -2,6 +2,9 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { revalidatePath } from 'next/cache';
 
 export default function Home() {
   const { data, status } = useSession();
@@ -34,6 +37,8 @@ export default function Home() {
   //   });
   // }, [user]);
 
+  console.log(data);
+
   return (
     <main className='flex min-h-screen flex-col items-center justify-between p-24'>
       {status === 'loading' && <div>Loading....</div>}
@@ -42,7 +47,11 @@ export default function Home() {
         <Link href='/api/auth/signin'>Login</Link>
       )}
       {status === 'authenticated' && (
-        <Link href='/api/auth/signout'>Logout</Link>
+        <>
+          <p> {`Bem vindo ${data.user?.name}!`}</p>
+          <Image src={data.user?.image!} alt='foto' width={40} height={40} />
+          <Link href='/api/auth/signout'>Logout</Link>
+        </>
       )}
     </main>
   );
