@@ -10,19 +10,17 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 
-const actionCodeSettings: ActionCodeSettings = {
-  url: process.env.NEXT_PUBLIC_BASE_URL || '',
+const actionCodeSettings: (url?: string) => ActionCodeSettings = (url) => ({
+  url: url || process.env.NEXT_PUBLIC_BASE_URL!,
   handleCodeInApp: true,
+});
+
+export const sendLoginEmail = async (email: string, url?: string) => {
+  await sendSignInLinkToEmail(auth, email, actionCodeSettings(url));
 };
 
-export const sendLoginEmail = async (email: string) => {
-  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-
-  window.localStorage.setItem('emailForSignIn', email);
-};
-
-export const loginUrl = (): boolean => {
-  return isSignInWithEmailLink(auth, window.location.href);
+export const isLoginUrl = (url: string): boolean => {
+  return isSignInWithEmailLink(auth, url);
 };
 
 export const login = async (
@@ -35,14 +33,15 @@ export const login = async (
     return user;
   }
 
-  if (!loginUrl || !email) return;
+  if (!isLoginUrl || !email) return;
 
   const { user } = await signInWithEmailLink(auth, email, window.location.href);
 
-  window.localStorage.removeItem('emailForSignIn');
-
   return user;
 };
+
+export const signInEmail = async (email: string, url: string) =>
+  await signInWithEmailLink(auth, email, url);
 
 export const onAuthChanged = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);

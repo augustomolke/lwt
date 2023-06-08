@@ -2,23 +2,27 @@
 
 import { getApp, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { firebaseConfig } from './firebase-client';
-import { cookies } from 'next/headers';
-import admin, { credential } from 'firebase-admin';
+import { cert } from 'firebase-admin/app';
+import { initFirestore } from '@next-auth/firebase-adapter';
 
 const app = !getApps().length
   ? initializeApp({
-      credential: credential.applicationDefault(),
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+      }),
     })
   : getApp();
 
 const auth = getAuth(app);
 
-export const teste = async (token: string) => {
-  const result = await auth.verifyIdToken(token);
-  const session = await auth.createSessionCookie(token, {
-    expiresIn: 60 * 10 * 1000,
-  });
-  cookies().set('__session', session);
-  console.log('🚀 ~ file: tests.ts:16 ~ teste ~ result:', result);
-};
+const firestore = initFirestore({
+  credential: cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+  }),
+});
+
+export { app, auth, firestore };

@@ -1,63 +1,48 @@
 'use client';
-import LoginForm from '@/components/LoginForm';
-import LogoutForm from '@/components/LogoutForm';
-import { useAuth } from '@/contexts/Authcontext';
-import { Button } from '@/components/ui/button';
-import { useCallback, useState } from 'react';
-import { firestore } from '@/lib/firebase-client';
-import {
-  query,
-  collection,
-  getDocs,
-  getDoc,
-  doc,
-  where,
-} from 'firebase/firestore';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 export default function Home() {
-  const user = useAuth();
+  const { data, status } = useSession();
 
   const [text, setText] = useState('');
 
-  const getText = useCallback(async () => {
-    console.log('não passou');
+  // const getText = useCallback(async () => {
+  //   console.log('não passou');
 
-    if (!user?.uid) return;
+  // if (!user?.uid) return;
 
-    console.log('PASSOU', user.uid);
-    const q = query(
-      collection(firestore, 'contents'),
-      where('user', '==', user.uid)
-    );
+  // console.log('PASSOU', user.uid);
+  // const q = query(
+  //   collection(firestore, 'contents'),
+  //   where('user', '==', user.uid)
+  // );
 
-    // const teste = await getDoc(
-    //   doc(firestore, 'contents', 'OgcC7swI6XA76YUdHO81')
-    // );
-    // console.log('🚀 ~ file: page.tsx:21 ~ getText ~ teste:', teste);
+  // const teste = await getDoc(
+  //   doc(firestore, 'contents', 'OgcC7swI6XA76YUdHO81')
+  // );
+  // console.log('🚀 ~ file: page.tsx:21 ~ getText ~ teste:', teste);
 
-    // setText(teste.data()?.content);
+  // setText(teste.data()?.content);
 
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      console.log('ASDSDFASD', doc);
-      setText(doc.data().content);
-      console.log(doc.id, ' => ', doc.data());
-    });
-  }, [user]);
+  //   const querySnapshot = await getDocs(q);
+  //   querySnapshot.forEach((doc) => {
+  //     console.log('ASDSDFASD', doc);
+  //     setText(doc.data().content);
+  //     console.log(doc.id, ' => ', doc.data());
+  //   });
+  // }, [user]);
 
   return (
     <main className='flex min-h-screen flex-col items-center justify-between p-24'>
-      {user ? (
-        <div>
-          {`Bem vindo ${user.email}!`}
-          <LogoutForm />
+      {status === 'loading' && <div>Loading....</div>}
 
-          <Button onClick={getText}>fetch contents</Button>
-
-          {text && <span>{text}</span>}
-        </div>
-      ) : (
-        <LoginForm />
+      {status === 'unauthenticated' && (
+        <Link href='/api/auth/signin'>Login</Link>
+      )}
+      {status === 'authenticated' && (
+        <Link href='/api/auth/signout'>Logout</Link>
       )}
     </main>
   );
