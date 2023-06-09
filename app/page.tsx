@@ -1,43 +1,14 @@
 'use client';
-import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { revalidatePath } from 'next/cache';
+import { verifyJwt } from '@/lib/jwt';
 
 export default function Home() {
-  const { data, status } = useSession();
+  const session = useSession();
 
-  const [text, setText] = useState('');
-
-  // const getText = useCallback(async () => {
-  //   console.log('não passou');
-
-  // if (!user?.uid) return;
-
-  // console.log('PASSOU', user.uid);
-  // const q = query(
-  //   collection(firestore, 'contents'),
-  //   where('user', '==', user.uid)
-  // );
-
-  // const teste = await getDoc(
-  //   doc(firestore, 'contents', 'OgcC7swI6XA76YUdHO81')
-  // );
-  // console.log('🚀 ~ file: page.tsx:21 ~ getText ~ teste:', teste);
-
-  // setText(teste.data()?.content);
-
-  //   const querySnapshot = await getDocs(q);
-  //   querySnapshot.forEach((doc) => {
-  //     console.log('ASDSDFASD', doc);
-  //     setText(doc.data().content);
-  //     console.log(doc.id, ' => ', doc.data());
-  //   });
-  // }, [user]);
-
-  console.log(data);
+  const { status, data } = session;
 
   return (
     <main className='flex min-h-screen flex-col items-center justify-between p-24'>
@@ -53,6 +24,16 @@ export default function Home() {
           <Link href='/api/auth/signout'>Logout</Link>
         </>
       )}
+
+      <Button
+        onClick={async () => {
+          await fetch('/api/contents', {
+            headers: { authorization: data?.user.accessToken! },
+          });
+        }}
+      >
+        teste
+      </Button>
     </main>
   );
 }
