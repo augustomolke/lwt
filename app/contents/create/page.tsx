@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useSession } from 'next-auth/react';
+import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -41,8 +42,6 @@ const Page = () => {
       headers: { authorization: data?.user.accessToken! },
       body: JSON.stringify(values),
     });
-
-    console.log('CRIOOOOU', await user.json());
   };
 
   return (
@@ -59,9 +58,6 @@ const Page = () => {
                   <FormControl>
                     <Input placeholder='Title' {...field} />
                   </FormControl>
-                  <FormDescription>
-                    This is your public display name.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -74,15 +70,13 @@ const Page = () => {
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Input
-                      type='text'
+                    <Textarea
+                      className=' h-[calc(100vh-15rem)]'
                       placeholder='...something interesting'
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    This is your public display name.
-                  </FormDescription>
+
                   <FormMessage />
                 </FormItem>
               )}

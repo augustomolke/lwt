@@ -1,9 +1,10 @@
 import { nextAuthOptions } from '@/app/api/auth/[...nextauth]/route';
 import { verifyJwt } from '@/lib/jwt';
-import { auth, firestore } from '@/lib/firebase-client';
+import { firestore } from '@/lib/firebase-client';
 import { DocumentData } from 'firebase-admin/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { getServerSession } from 'next-auth';
+import { getAuth } from 'firebase/auth';
 
 interface ContentPageProps {
   params: { id: string };
@@ -21,6 +22,7 @@ const fetchContent: (id: string) => Promise<DocumentData | undefined> = async (
   if (!user) return undefined;
 
   const docRef = doc(firestore, 'contents', id);
+
   const docSnap = await getDoc(docRef);
 
   return docSnap.data();
@@ -34,7 +36,7 @@ const Page: React.FunctionComponent<ContentPageProps> = async ({ params }) => {
   return (
     <section>
       <div>{content.title}</div>
-      <div>
+      <div className='flex flex-wrap'>
         {content.content.map((term: any) => (
           <div key={`${term.value}-${term.pos}`}>{term.text}</div>
         ))}

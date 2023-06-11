@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import { firestore } from '@/lib/firebase-client';
+import { firestore as fsServer } from '@/lib/firebase-server';
 import {
   query,
   collection,
   where,
   getDocs,
   DocumentData,
-  setDoc,
+  deleteDoc,
+  arrayUnion,
   doc,
   runTransaction,
 } from 'firebase/firestore';
@@ -68,22 +70,26 @@ export const POST = async (req: NextRequest) => {
     ctx.accept('char');
   });
 
-  const content = lexer.input(text.content).tokens();
+  const terms = lexer.input(text.content).tokens();
   const contentId = slug(text.title);
 
-  const result = await runTransaction(firestore, async (transaction) => {
-    content.forEach(({ value, type }) => {
+  await runTransaction(firestore, async (transaction) => {
+    terms.forEach(async ({ value, type }) => {
       if (type === 'word') {
+        const docRef = doc(firestore, 'users', user.id, 'terms', value);
+
+        transaction.set(docRef, { level: 7 }, { merge: true });
+
         transaction.set(
-          doc(firestore, 'terms', value.toString()),
-          { level: 7 },
+          doc(firestore, docRef.path, 'contents', contentId),
+          { context: 'to-do' },
           { merge: true }
         );
       }
     });
 
     transaction.set(doc(firestore, 'contents', contentId), {
-      content: content.map(({ type, value, text, pos }) => ({
+      content: terms.map(({ type, value, text, pos }) => ({
         type,
         value,
         text,

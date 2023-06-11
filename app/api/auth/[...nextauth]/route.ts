@@ -1,12 +1,13 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import Email from 'next-auth/providers/email';
-import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { FirestoreAdapter } from '@next-auth/firebase-adapter';
 import { sendLoginEmail } from '@/services/auth';
-import bcrypt from 'bcrypt';
 import { firestore, auth } from '@/lib/firebase-server';
+import { auth as clientAuth } from '@/lib/firebase-client';
 import { signJwtAccessToken } from '@/lib/jwt';
+import { signOut, signInWithCustomToken } from 'firebase/auth';
+// import CredentialsProvider from 'next-auth/providers/credentials';
 
 export const adapter = FirestoreAdapter(firestore);
 
@@ -46,13 +47,12 @@ export const nextAuthOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    // async signIn({ user }) {
-    //   //
-
-    //   return true;
-    // },
     async jwt({ token, user, trigger, profile }) {
       if (trigger === 'signIn') {
+        const firebaseToken = await auth.createCustomToken(user.id);
+
+        await signInWithCustomToken(clientAuth, firebaseToken);
+
         const { hashedPassword, ...userWithoutPassword } = user;
         const newAccessToken = signJwtAccessToken(userWithoutPassword);
         token.accessToken = newAccessToken;
@@ -73,10 +73,12 @@ export const nextAuthOptions: NextAuthOptions = {
   events: {
     // async signIn(message) {
     //   console.log('🚀 ~ file: route.ts:47 ~ signIn ~ message:', message);
+    //   const result = await signInAnonymously(clientAuth);
+    //   console.log('🚀 ~ file: route.ts:79 ~ signIn ~ result:', result);
     // },
-    //   async signOut(message) {
-    //     console.log('🚀 ~ file: route.ts:47 ~ signOut ~ message:', message);
-    //   },
+    async signOut() {
+      await signOut(clientAuth);
+    },
     // async session(message) {
     //   console.log('🚀 ~ file: route.ts:35 ~ session ~ message:', message);
     // },

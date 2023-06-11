@@ -191,7 +191,7 @@ const PrivateSidebar: React.FunctionComponent<PrivateSidebarProps> = ({
         </div>
       </aside>
 
-      <main className='sm:ml-64'>{children}</main>
+      <main className='sm:ml-64 container'>{children}</main>
     </>
   );
 };
