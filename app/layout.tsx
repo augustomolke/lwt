@@ -1,6 +1,7 @@
 import { Authprovider } from '@/contexts/Authcontext';
 import './globals.css';
 import { Inter } from 'next/font/google';
+import Sidebar from '@/components/Sidebar';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,7 +18,9 @@ export default function RootLayout({
   return (
     <html className='dark' lang='en'>
       <body className={inter.className}>
-        <Authprovider>{children}</Authprovider>
+        <Authprovider>
+          <Sidebar>{children}</Sidebar>
+        </Authprovider>
       </body>
     </html>
   );

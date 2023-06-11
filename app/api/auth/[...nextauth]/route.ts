@@ -15,25 +15,25 @@ export const nextAuthOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email', placeholder: 'name@email.com' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        const user = await adapter.getUserByEmail(credentials?.email!);
+    // CredentialsProvider({
+    //   name: 'Credentials',
+    //   credentials: {
+    //     email: { label: 'Email', type: 'email', placeholder: 'name@email.com' },
+    //     password: { label: 'Password', type: 'password' },
+    //   },
+    //   async authorize(credentials) {
+    //     const user = await adapter.getUserByEmail(credentials?.email!);
 
-        if (user) {
-          return credentials?.password &&
-            (await bcrypt.compare(credentials?.password!, user.hashedPassword))
-            ? user
-            : null;
-        }
+    //     if (user) {
+    //       return credentials?.password &&
+    //         (await bcrypt.compare(credentials?.password!, user.hashedPassword))
+    //         ? user
+    //         : null;
+    //     }
 
-        return null;
-      },
-    }),
+    //     return null;
+    //   },
+    // }),
     Email({
       async sendVerificationRequest({ identifier, url }) {
         await sendLoginEmail(identifier, url);
@@ -51,17 +51,19 @@ export const nextAuthOptions: NextAuthOptions = {
 
     //   return true;
     // },
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, profile }) {
       if (trigger === 'signIn') {
         const { hashedPassword, ...userWithoutPassword } = user;
         const newAccessToken = signJwtAccessToken(userWithoutPassword);
         token.accessToken = newAccessToken;
+        token.name = profile?.given_name || profile?.name;
+        token.picture = profile?.picture || profile?.image;
       }
 
       return token;
     },
 
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       // Send properties to the client, like an access_token and user id from a provider.
       session.user.accessToken = token.accessToken as string;
       return session;

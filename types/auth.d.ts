@@ -3,9 +3,9 @@ import NextAuth from 'next-auth';
 declare module 'next-auth' {
   interface Session {
     user: {
-      name: string;
+      name?: string;
       email: string;
-      image: string;
+      image?: string;
       accessToken: string;
     };
   }
@@ -23,5 +23,14 @@ declare module 'next-auth' {
    */
   interface Account {}
   /** The OAuth profile returned from your provider */
-  interface Profile {}
+  interface Profile {
+    picture?: string;
+    given_name?: string;
+  }
+
+  interface JWT {
+    accessToken: string;
+    givenName: string;
+    image: string;
+  }
 }

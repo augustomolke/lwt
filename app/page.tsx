@@ -1,39 +1,47 @@
-'use client';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+
+import { getServerSession } from 'next-auth';
+import { nextAuthOptions } from './api/auth/[...nextauth]/route';
 import { verifyJwt } from '@/lib/jwt';
+import { firestore } from '@/lib/firebase-client';
+import { DocumentData } from 'firebase-admin/firestore';
+import { query, collection, where, getDocs } from 'firebase/firestore';
 
-export default function Home() {
-  const session = useSession();
+const fetchContents = async () => {
+  const session = await getServerSession(nextAuthOptions);
 
-  const { status, data } = session;
+  if (!session) return [];
+
+  const user = verifyJwt(session.user.accessToken);
+
+  if (!user) return [];
+
+  const q = query(
+    collection(firestore, 'contents'),
+    where('user', '==', user.id)
+  );
+
+  const contents: { id: string; data: DocumentData }[] = [];
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    contents.push({ id: doc.id, data: doc.data() });
+  });
+
+  return contents;
+};
+
+export default async function Home() {
+  const contents = await fetchContents();
+
+  if (!contents) return null;
 
   return (
-    <main className='flex min-h-screen flex-col items-center justify-between p-24'>
-      {status === 'loading' && <div>Loading....</div>}
-
-      {status === 'unauthenticated' && (
-        <Link href='/api/auth/signin'>Login</Link>
-      )}
-      {status === 'authenticated' && (
-        <>
-          <p> {`Bem vindo ${data.user?.name}!`}</p>
-          <Image src={data.user?.image!} alt='foto' width={40} height={40} />
-          <Link href='/api/auth/signout'>Logout</Link>
-        </>
-      )}
-
-      <Button
-        onClick={async () => {
-          await fetch('/api/contents', {
-            headers: { authorization: data?.user.accessToken! },
-          });
-        }}
-      >
-        teste
-      </Button>
-    </main>
+    <section className='flex min-h-screen flex-col items-center justify-between p-24'>
+      {contents.map((content) => (
+        <Link key={content.id} href={`/contents/${content.id}`}>
+          {content.data.title}
+        </Link>
+      ))}
+    </section>
   );
 }
